@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TopoLab</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+<!-- Header -->
+<header>
+  <div class="header-content">
+    <h1><i class="fas fa-city"></i> TopoLab</h1>
+    <p class="subtitle">Topological City Builder</p>
+    <p class="subtitle-small">Learn Path Connectivity concepts through urban planning</p>
+  </div>
+  <div class="header-controls">
+    <div class="header-controls-row">
+      <button id="analyzeBtn" class="btn btn-primary">
+        <i class="fas fa-chart-bar"></i> Analyze Connectivity
+      </button>
+      <button id="challengesBtn" class="btn btn-info">
+        <i class="fas fa-tasks"></i> Challenges
+      </button>
+      <button id="reportBtn" class="btn btn-warning">
+        <i class="fas fa-file-pdf"></i> Report
+      </button>
+      <button id="saveBtn" class="btn btn-success">
+        <i class="fas fa-save"></i> Save
+      </button>
+      <button id="clearBtn" class="btn btn-danger">
+        <i class="fas fa-trash"></i> Clear All
+      </button>
+      <button id="deleteModeBtn" class="btn btn-secondary">
+        <i class="fas fa-trash-alt"></i> Delete Mode
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <!-- Left Toolbar -->
+  <aside class="sidebar left-sidebar">
+    <div class="tool-section">
+      <h3><i class="fas fa-building"></i> Buildings</h3>
+      <div class="sticker-palette">
+        <div class="sticker-btn" data-type="house" title="House">
+          <span class="sticker-emoji">🏠</span>
+          <span class="sticker-label">House</span>
+        </div>
+        <div class="sticker-btn" data-type="hospital" title="Hospital">
+          <span class="sticker-emoji">🏥</span>
+          <span class="sticker-label">Hospital</span>
+        </div>
+        <div class="sticker-btn" data-type="school" title="School">
+          <span class="sticker-emoji">🏫</span>
+          <span class="sticker-label">School</span>
+        </div>
+        <div class="sticker-btn" data-type="shop" title="Shop">
+          <span class="sticker-emoji">🛒</span>
+          <span class="sticker-label">Shop</span>
+        </div>
+        <div class="sticker-btn" data-type="factory" title="Factory">
+          <span class="sticker-emoji">🏭</span>
+          <span class="sticker-label">Factory</span>
+        </div>
+        <div class="sticker-btn" data-type="park" title="Park">
+          <span class="sticker-emoji">🌳</span>
+          <span class="sticker-label">Park</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tool-section">
+      <h3><i class="fas fa-road"></i> Connections</h3>
+      <div class="connection-palette">
+        <div class="connection-btn active" data-type="road" title="Road">
+          <span class="connection-emoji">🛣️</span>
+          <span class="connection-label">Road</span>
+        </div>
+        <div class="connection-btn" data-type="bridge" title="Bridge">
+          <span class="connection-emoji">🌉</span>
+          <span class="connection-label">Bridge</span>
+        </div>
+        <div class="connection-btn" data-type="metro" title="Metro">
+          <span class="connection-emoji">🚇</span>
+          <span class="connection-label">Metro</span>
+        </div>
+        <div class="connection-btn" data-type="walkway" title="Walkway">
+          <span class="connection-emoji">🚶</span>
+          <span class="sticker-label">Walkway</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tool-section">
+      <h3><i class="fas fa-sliders-h"></i> Settings</h3>
+      <div class="settings">
+        <label for="connectivityThreshold">Connection distance threshold:</label>
+        <input type="range" id="connectivityThreshold" min="50" max="200" value="100">
+        <span id="thresholdValue">100 pixels</span>
+
+        <label for="gridSnap">Grid snapping:</label>
+        <input type="checkbox" id="gridSnap" checked>
+      </div>
+    </div>
+
+    <div class="tool-section">
+      <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+      <button id="createSampleBtn" class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;">
+        <i class="fas fa-plus"></i> Sample City
+      </button>
+      <button id="loadLastSaveBtn" class="btn btn-secondary" style="width: 100%;">
+        <i class="fas fa-history"></i> Load Last Save
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Canvas -->
+  <main class="main-content">
+    <div class="canvas-container">
+      <canvas id="cityCanvas" width="800" height="600">
+        Your browser does not support canvas!
+      </canvas>
+      <div class="canvas-grid" id="gridOverlay"></div>
+    </div>
+
+    <div class="instructions">
+      <h4><i class="fas fa-info-circle"></i> How to use:</h4>
+      <ol>
+        <li>Select a building type and click on the canvas.</li>
+        <li>To connect two buildings, click and drag from one to another.</li>
+        <li>Click "Analyze Connectivity" to check if your city is connected.</li>
+        <li>For practical exercises, click the "Challenges" button.</li>
+      </ol>
+    </div>
+
+    <!-- Report Panel -->
+    <div id="reportPanel" class="report-panel" style="display: none;">
+      <h3><i class="fas fa-file-alt"></i> City Analysis Report :</h3>
+      <div id="reportContent"></div>
+      <div class="report-actions">
+        <button id="printReportBtn" class="btn btn-primary">
+          <i class="fas fa-print"></i> Print Report
+        </button>
+        <button id="shareReportBtn" class="btn btn-success">
+          <i class="fas fa-share"></i> Share
+        </button>
+        <button id="closeReportBtn" class="btn btn-danger">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+    </div>
+
+    <!-- Challenges Panel -->
+    <div id="challengesPanel" class="challenges-panel" style="display: none;">
+      <h3><i class="fas fa-trophy"></i> Challenges & Exercises :</h3>
+      <div class="challenges-list">
+        <div class="challenge-card" data-challenge="1">
+          <h4><i class="fas fa-star"></i> Exercise 1: Basic Connected City.</h4>
+          <p>Build a city with 3 houses and 1 hospital that is fully connected.</p>
+          <button class="btn btn-sm btn-start-challenge" data-challenge="1">Start Exercise</button>
+          <div class="hint" style="display: none;">
+            <p><strong>Hint:</strong> Every house should have access to the hospital.</p>
+          </div>
+        </div>
+
+        <div class="challenge-card" data-challenge="2">
+          <h4><i class="fas fa-star"></i> Exercise 2: Disconnected City.</h4>
+          <p>Create a city with 2 separate regions that are not connected.</p>
+          <button class="btn btn-sm btn-start-challenge" data-challenge="2">Start Exercise</button>
+          <div class="hint" style="display: none;">
+            <p><strong>Hint:</strong> Two groups of buildings without connections between them.</p>
+          </div>
+        </div>
+
+        <div class="challenge-card" data-challenge="3">
+          <h4><i class="fas fa-star"></i> Exercise 3: Earthquake & Bridge Failure.</h4>
+          <p>Build a connected city where removing one bridge disconnects it.</p>
+          <button class="btn btn-sm btn-start-challenge" data-challenge="3">Start Exercise</button>
+          <div class="hint" style="display: none;">
+            <p><strong>Hint:</strong> Create a critical bridge between two regions.</p>
+          </div>
+        </div>
+
+        <div class="challenge-card" data-challenge="4">
+          <h4><i class="fas fa-medal"></i> Challenge 1: Shortest Network.</h4>
+          <p>Connect 5 houses with the minimum number of roads.</p>
+          <button class="btn btn-sm btn-start-challenge" data-challenge="4">Start Challenge</button>
+          <div class="hint" style="display: none;">
+            <p><strong>Math Tip:</strong> n points can be connected with n-1 edges!</p>
+          </div>
+        </div>
+
+        <div class="challenge-card" data-challenge="5">
+          <h4><i class="fas fa-medal"></i> Challenge 2: Resilient City.</h4>
+          <p>Build a city where removing any single road doesn't disconnect it.</p>
+          <button class="btn btn-sm btn-start-challenge" data-challenge="5">Start Challenge</button>
+          <div class="hint" style="display: none;">
+            <p><strong>Math Tip:</strong> This property is called "2-edge-connected".</p>
+          </div>
+        </div>
+      </div>
+      <div class="challenge-progress">
+        <h4>Your Progress:</h4>
+        <div class="progress-bar">
+          <div class="progress-fill" id="challengeProgress" style="width: 0%"></div>
+        </div>
+        <p id="completedCount">0/5 challenges completed.</p>
+      </div>
+      <button id="closeChallengesBtn" class="btn btn-danger">
+        <i class="fas fa-times"></i> Close
+      </button>
+    </div>
+  </main>
+
+  <!-- Right Analysis Panel -->
+  <aside class="sidebar right-sidebar">
+    <div class="analysis-panel">
+      <h3><i class="fas fa-chart-line"></i> Connectivity Analysis</h3>
+      <div id="analysisResults" class="results">
+        <div class="result-item">
+          <span class="result-label">Status:</span>
+          <span id="connectivityStatus" class="result-value status-empty">Not analyzed yet.</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Buildings:</span>
+          <span id="buildingCount" class="result-value">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Connections:</span>
+          <span id="connectionCount" class="result-value">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Components:</span>
+          <span id="componentCount" class="result-value">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Largest Component:</span>
+          <span id="largestComponent" class="result-value">0 buildings</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Connectivity Index:</span>
+          <span id="connectivityIndex" class="result-value">0.00</span>
+        </div>
+      </div>
+
+      <div class="issues-panel">
+        <h4><i class="fas fa-exclamation-triangle"></i> Identified Issues:</h4>
+        <ul id="issuesList">
+          <li class="no-issues">No issues identified yet.</li>
+        </ul>
+      </div>
+
+      <div class="educational-tips">
+        <div class="educational-tips-content">
+          <h4><i class="fas fa-lightbulb"></i> Educational Insight:</h4>
+          <p id="educationalTip">
+            A city is <strong>connected</strong> when you can travel from any building to any other building.
+            In mathematics, a topological space is connected if it cannot be divided into two disjoint open sets.
+          </p>
+        </div>
+      </div>
+
+      <div class="challenge-status">
+        <h4><i class="fas fa-tasks"></i> Current Challenge Status:</h4>
+        <div id="currentChallengeStatus">
+          <p>No active challenge.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- Message Modal -->
+<div id="messageModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <div id="modalMessage"></div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-content">
+    <p>Topology & Graph Theory Project - TopoLab</p>
+    <p class="footer-note">
+      This application teaches <strong>path connectivity</strong> concepts.
+      in graph theory and topology through urban planning simulation.
+    </p>
+
+    <div class="footer-members">
+      <div class="member">
+        <strong>Designer:</strong><br>
+        <span class="member-name">Setayesh Ataie</span>
+        <span class="member-role">Computer Science Student</span>
+      </div>
+      <div class="member">
+        <strong>Supervisor:</strong><br>
+        <span class="member-name">Dr. Moslehian</span>
+        <span class="member-role">Mathematical Analysis Professor</span>
+      </div>
+    </div>
+
+    <div class="footer-university">
+      <i class="fas fa-graduation-cap"></i>
+      <strong>Ferdowsi University of Mashhad</strong>
+      <p>
+        <i class="fas fa-calendar-alt"></i>
+        <strong>Semester:</strong> Fall 2025
+      </p>
+    </div>
+  </div>
+</footer>
+
+<!-- Scripts -->
+<script src="city-logic.js"></script>
+<script src="challenges.js"></script>
+<script src="app.js"></script>
+<script src="report.js"></script>
+</body>
+</html>
